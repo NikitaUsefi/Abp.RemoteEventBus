@@ -35,12 +35,15 @@ namespace Abp.RemoteEventBus.RabbitMQ
             var connection = _connectionPool.Acquire();
             try
             {
-                var channel = connection.CreateModel();
-                channel.ExchangeDeclare(_exchangeTopic, "topic",true);
-                var body = Encoding.UTF8.GetBytes(_remoteEventSerializer.Serialize(remoteEventData));
-                var properties = channel.CreateBasicProperties();
-                properties.Persistent = true;
-                channel.BasicPublish(_exchangeTopic, topic, properties, body);
+                using (var channel = connection.CreateModel())
+                {
+                    channel.ExchangeDeclare(_exchangeTopic, "topic", true);
+                    var body = Encoding.UTF8.GetBytes(_remoteEventSerializer.Serialize(remoteEventData));
+                    var properties = channel.CreateBasicProperties();
+                    properties.Persistent = true;
+                    channel.BasicPublish(_exchangeTopic, topic, properties, body);
+                }
+                
             }
             finally
             {
